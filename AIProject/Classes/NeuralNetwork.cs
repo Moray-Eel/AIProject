@@ -9,18 +9,24 @@ namespace AIProject.Classes;
 
 public class NeuralNetwork
 {
-    public decimal Bias { get; set; }
-    public List<Layer> Layers { get; set; }
-    public NeuralNetwork(int layers, int[] neuronInLayers)
-    {
-        Layers = new List<Layer>(layers);
 
-        for (int i = 0; i < layers; i++)
-        {
-            if (i == layers - 1)
-                Layers[i] = new Layer(neuronInLayers[i], null);
-            else
-                Layers[i] = new Layer(neuronInLayers[i], neuronInLayers[i + 1]);
-        }
+    //Values for every layer -> Values[i][j] where i -> a layer number,
+    //j -> a node number
+    public decimal[][] Values { get; set; }
+
+    //Biases for every layer -> Biases[i][j] where i -> a layer number,
+    //j -> a node number
+    public decimal[][] Biases { get; set; }
+    
+    //Weigths for every layer -> Weights[i][j][z] where i-> a layer number, 
+    //j -> a node number in a layer i, z-> a node number in a layer i+1
+    //If N is a number of layers in our network then -> Weights[z-1][][]
+    public decimal[][][] Weights { get; set; }
+
+    public NeuralNetwork(int[] layers)
+    {
+
     }
+
+
 }
