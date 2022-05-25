@@ -29,6 +29,10 @@ public class NeuralNetwork
     
     public double LearningRate = 0.001;
 
+    public double momentum = 0.01;
+
+    public double maxIterationNumber = 1000; // liczba iteracji procesu uczenia
+
     public NeuralNetwork(int[] layers)
     {
         Values = new double[layers.Length][];
@@ -75,6 +79,32 @@ public class NeuralNetwork
         {
             Values[0][i] = input[i];
         }
+    }
+
+    public double[][] ReadFromFile(string filePath) // funkcja czytająca dane z pliku, zwracająca je w postaci macierzy dwuwymiarowej typu double
+    {
+        int i = 0;
+
+        int lineCount = File.ReadAllLines(filePath).Length;
+       
+        double[][] matrix = new double[lineCount][];
+
+        foreach (string line in System.IO.File.ReadLines(filePath))
+        {
+            string[] split = line.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            double[] values = new double[split.Length];
+
+            for (int n = 0; n < split.Length; n++)
+                values[n] = double.Parse(split[n]);
+
+            
+
+            for(int j = 0; j < values.Length; j++)
+                matrix[i][j] = values[j];
+
+            i++;
+        }
+        return matrix;
     }
 
 }
