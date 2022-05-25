@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using AIProject.Classes;
@@ -48,9 +49,14 @@ public class NeuralNetwork
             }
         }
     }
-    public void InitializeNumbers()
+    public void InitializeWeightsAndBiases()
     {
-
+        for (int i = 0; i < Weights.GetLength(0) - 1; i++)
+            for (int j = 0; j < Weights.GetLength(1) - 1; j++)
+                for (int k = 0; k < Weights.GetLength(2); k++)
+                {
+                    
+                }
     }
     /// <summary>
     /// Takes the array of values for input layer.
