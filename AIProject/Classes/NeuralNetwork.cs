@@ -26,12 +26,15 @@ public class NeuralNetwork
     //j -> a node number in a layer i, k-> a node number in a layer i+1
     //If N is a number of layers in our network then -> Weights[N-1][][]
     public double[][][] Weights { get; set; }
+    public double[][][] WeightsGradients { get; set; }
+
+    public double[][] BiasesGradients { get; set; }
     
     public double LearningRate = 0.001;
 
-    public double momentum = 0.01;
+    public double Momentum = 0.01;
 
-    public double maxIterationNumber = 1000; // liczba iteracji procesu uczenia
+    public double MaxIterationNumber = 1000; // liczba iteracji procesu uczenia
 
     public NeuralNetwork(int[] layers)
     {
@@ -105,6 +108,11 @@ public class NeuralNetwork
             i++;
         }
         return matrix;
+    }
+
+    private double Error(double[][] trainData)
+    {
+        throw new NotImplementedException();
     }
 
 }
