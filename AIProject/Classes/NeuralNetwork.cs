@@ -50,18 +50,28 @@ public class NeuralNetwork
             }
         }
     }    /// <summary>
-    /// Inicjalizuje wagi i biasy w przedziale od min do max
+    /// Inicjalizuje wagi i biasy z przedziału od min do max
     /// </summary>
     /// <param name="min"></param>
     /// <param name="max"></param>
     public void InitializeWeightsAndBiases(int min, int max)
     {
+
+        //Inicjalizacja losowych wag z przedziału min do max
         for (int i = 0; i < Weights.GetLength(0); i++)
             for (int j = 0; j < Weights[i].Length; j++)
+            {
                 for (int k = 0; k < Weights[i][j].Length; k++)
                 {
                     Weights[i][j][k] = _randomizer.NextDouble(min, max);
                 }
+            }
+
+        //Inicjalizacja losowych biasów z przedziału min do max
+        for (int i = 0; i < Biases.GetLength(0); i++)
+            for (int j = 0; j < Biases[i].Length; j++)
+                Biases[i][j] = _randomizer.NextDouble(min, max);
+
     }
 
     /// <summary>
@@ -79,14 +89,24 @@ public class NeuralNetwork
             Values[0][i] = input[i];
         }
     }
-    public void Train()
+    
+    
+    //Funkcja oblicza wartości dla neuronów dla warstw > 1 poprzez
+    //mnożenie wektora wartości z poprzedniej warstw z wektorem wag 
+    public void ComputeValues()
     {
         for (int i = 1; i < Values.GetLength(0); i++)
-            for (int j=0; j < Values[i].Length; j++)
+            for (int j = 0; j < Values[i].Length; j++)
             {
-                Values[i][j] = Sum(Values[i - 1], Weights[i - 1], j);
+                Values[i][j] = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i][j];
             }
     }
+
+    public void Train()
+    {
+    }
+    //Zwraca iloczyn wektorów tablicy values z tablicą weigths w (v,i), gdzie i to iterator tablicy values, a j to numer 
+    //neuronu, dla którego obliczamy wagu
     public double Sum(double[] values, double[][] weights, int j) => values.Select((v, i) => v * weights[i][j]).Sum();
     public void TestMethod()
     {
