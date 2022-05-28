@@ -82,11 +82,22 @@ public class NeuralNetwork
     public void Train()
     {
         for (int i = 1; i < Values.GetLength(0); i++)
-            for (int j=0; j < Weights[i].Length; j++)
+            for (int j=0; j < Values[i].Length; j++)
             {
-                Values[i][j] = Sum(Values[i - 1], Weights[i - 1]);
+                Values[i][j] = Sum(Values[i - 1], Weights[i - 1], j);
             }
     }
-    public double Sum(double[] values, double[][] weights) => values.Select((v, i) => v * weights[i][0]).Sum();
+    public double Sum(double[] values, double[][] weights, int j) => values.Select((v, i) => v * weights[i][j]).Sum();
+    public void TestMethod()
+    {
+        this.Values[0][0] = 1;
+        this.Values[0][1] = 1;
+        this.Values[0][2] = 1;
+        this.Values[0][3] = 1;
+        this.Values[0][4] = 1;
+        this.Values[0][5] = 1;
+        this.Values[0][6] = 1;
+
+    }
 
 }
