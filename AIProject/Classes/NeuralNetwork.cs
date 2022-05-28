@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AIProject.Classes;
 using AIProject.Classes.Extensions;
 
+
 namespace AIProject.Classes;
 
 
@@ -71,7 +72,6 @@ public class NeuralNetwork
         for (int i = 0; i < Biases.GetLength(0); i++)
             for (int j = 0; j < Biases[i].Length; j++)
                 Biases[i][j] = _randomizer.NextDouble(min, max);
-
     }
 
     /// <summary>
@@ -89,17 +89,44 @@ public class NeuralNetwork
             Values[0][i] = input[i];
         }
     }
-    
-    
-    //Funkcja oblicza wartości dla neuronów dla warstw > 1 poprzez
-    //mnożenie wektora wartości z poprzedniej warstw z wektorem wag 
+
+    /// <summary>
+    /// Funkcja oblicza wartości dla neuronów dla warstw > 1 poprzez
+    ///mnożenie wektora wartości z poprzedniej warstwy z wektorem wag pomiędzy warstwami
+    /// </summary>
+   
     public void ComputeValues()
     {
+        double sum;
+
         for (int i = 1; i < Values.GetLength(0); i++)
             for (int j = 0; j < Values[i].Length; j++)
             {
-                Values[i][j] = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i][j];
+                sum = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i][j];
+                Values[i][j] = ComputeSigmoid(sum); 
             }
+    }
+
+    
+    public double ComputeTotalError(double[] targetValues)
+    {
+        double[] outputs = Values[Values.Length - 1];
+
+        if (outputs.Length != targetValues.Length)
+            throw new ArgumentOutOfRangeException();
+
+        return outputs.Select((v, i) => 0.5 * Math.Pow(v - targetValues[i],2)).Sum();
+    }
+
+    /// <summary>
+    /// Oblicza wartość funkcji sigmoidalnej 1/(1+e^(-x))
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
+    public double ComputeSigmoid(double x)
+    {
+        double eToPowerMinusX = Math.Exp(-x);
+        return 1 / (1 + eToPowerMinusX);
     }
 
     public void Train()
