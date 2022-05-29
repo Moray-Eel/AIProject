@@ -27,7 +27,15 @@ public class NeuralNetwork
     //j -> numer neuronu w warstwie i, k-> numer neuronu w warstwie i+1
     //Jeśli nasza sieć ma N warstw to -> Weights[N-1][][]
     public double[][][] Weights { get; set; }
-    
+
+    public double[][][] UpdatedWeights { get; set; }
+    public double[][][] Gradient { get; set; }
+    public double[][] Signals { get; set; }
+    public double[] TargetValues { get; set; }
+
+
+
+
     public double LearningRate = 0.001;
 
     public NeuralNetwork(int[] layers)
@@ -35,6 +43,9 @@ public class NeuralNetwork
         Values = new double[layers.Length][];
         Biases = new double[layers.Length][];
         Weights = new double[layers.Length-1][][];
+        UpdatedWeights = new double[layers.Length - 1][][];
+        Gradient = new double[layers.Length - 1][][];
+
 
         for (int i = 0; i < layers.Length; i++)
         {
@@ -44,10 +55,13 @@ public class NeuralNetwork
         for (int i = 0; i < layers.Length-1 ; i++)
         {
             Weights[i] = new double[layers[i]][];
-            
+            UpdatedWeights[i] = new double[layers[i]][];
+
+
             for (int j = 0; j < Weights[i].Length; j++)
             {
                 Weights[i][j] = new double[layers[i+1]];
+                UpdatedWeights[i] = new double[layers[i]][];
             }
         }
     }    /// <summary>
@@ -131,6 +145,10 @@ public class NeuralNetwork
 
     public void Train()
     {
+        for(int i=0; i < Values[Values.Length-1].Length; i++)
+        {
+            
+        }
     }
     //Zwraca iloczyn wektorów tablicy values z tablicą weigths w (v,i), gdzie i to iterator tablicy values, a j to numer 
     //neuronu, dla którego obliczamy wagu
