@@ -14,7 +14,7 @@ namespace AIProject.Classes;
 public class NeuralNetwork
 {
 
-    private readonly Random _randomizer = new Random();
+    private readonly Random _randomizer = new ();
     //Wartości dla każdej warstwy -> Values[i][j] gdzie i -> numer warstwy,
     //j -> numer neuronu
     public double[][] Values { get; set; }
@@ -28,8 +28,18 @@ public class NeuralNetwork
     //Jeśli nasza sieć ma N warstw to -> Weights[N-1][][]
     public double[][][] Weights { get; set; }
 
+    //Nowa waga dla każdej warstwy -> Weights[i][j][k] gdzie i-> numer warstwy, 
+    //j -> numer neuronu w warstwie i, k-> numer neuronu w warstwie i+1
+    //Jeśli nasza sieć ma N warstw to -> Weights[N-1][][]
     public double[][][] UpdatedWeights { get; set; }
-    public double[][][] Gradient { get; set; }
+    
+    //Nowe biasy dla kazdej warstwy -> Biases[i][j] gdzie i -> a numer warstwy,
+    //j -> numer neuronu
+    public double[][] UpdatedBiases { get; set; }
+
+    //Gradienty dla każdej warstwy -> Values[i][j] gdzie i -> numer warstwy,
+    //j -> numer neuronu
+    public double[][] Gradient { get; set; }
     public double[][] Signals { get; set; }
     public double[] TargetValues { get; set; }
 
@@ -41,21 +51,22 @@ public class NeuralNetwork
     public NeuralNetwork(int[] layers)
     {
         Values = new double[layers.Length][];
-        Biases = new double[layers.Length][];
+        Biases = new double[layers.Length-1][];
         Weights = new double[layers.Length-1][][];
         UpdatedWeights = new double[layers.Length - 1][][];
-        Gradient = new double[layers.Length - 1][][];
+        Gradient = new double[layers.Length - 1][];
+        Signals = new double[layers.Length - 1][];
 
 
         for (int i = 0; i < layers.Length; i++)
         {
             Values[i] = new double[layers[i]];
-            Biases[i] = new double[layers[i]];
         }
         for (int i = 0; i < layers.Length-1 ; i++)
         {
             Weights[i] = new double[layers[i]][];
             UpdatedWeights[i] = new double[layers[i]][];
+            Biases[i] = new double[layers[i]];
 
 
             for (int j = 0; j < Weights[i].Length; j++)
@@ -96,7 +107,7 @@ public class NeuralNetwork
     public void ReadInput(int[] input)
     {
         if (input.Length != Values.GetLength(0))
-            throw new ArgumentOutOfRangeException("input");
+            throw new ArgumentOutOfRangeException(nameof(input));
 
         for (int i = 0; i < input.Length; i++)
         {
@@ -124,10 +135,10 @@ public class NeuralNetwork
     
     public double ComputeTotalError(double[] targetValues)
     {
-        double[] outputs = Values[Values.Length - 1];
+        double[] outputs = Values[^1];
 
         if (outputs.Length != targetValues.Length)
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(outputs.Length));
 
         return outputs.Select((v, i) => 0.5 * Math.Pow(v - targetValues[i],2)).Sum();
     }
@@ -137,7 +148,7 @@ public class NeuralNetwork
     /// </summary>
     /// <param name="x"></param>
     /// <returns></returns>
-    public double ComputeSigmoid(double x)
+    public static double ComputeSigmoid(double x)
     {
         double eToPowerMinusX = Math.Exp(-x);
         return 1 / (1 + eToPowerMinusX);
@@ -145,24 +156,30 @@ public class NeuralNetwork
 
     public void Train()
     {
-        for(int i=0; i < Values[Values.Length-1].Length; i++)
+        double[] outputs = Values[^1];
+        double []outputGradients = Gradient[^1];
+        for (int i=0; i < Signals.Length; i++)
         {
-            
+            Signals[^1][i] = (TargetValues[i] - outputs[i]) * (1 - outputs[i]);
         }
+
+        for (int i = 0; i < UpdatedWeights[^2].Length; i++)
+            for(int j = 0; j < UpdatedWeights[^1].Length; j++)
+            {
+                UpdatedBiases[^1][j] -= Signals[^1][j] * LearningRate;
+
+                UpdatedWeights[^1][i][j] -= Signals[^1][j] * LearningRate;
+            }
     }
     //Zwraca iloczyn wektorów tablicy values z tablicą weigths w (v,i), gdzie i to iterator tablicy values, a j to numer 
     //neuronu, dla którego obliczamy wagu
-    public double Sum(double[] values, double[][] weights, int j) => values.Select((v, i) => v * weights[i][j]).Sum();
+    public static double Sum(double[] values, double[][] weights, int j) => values.Select((v, i) => v * weights[i][j]).Sum();
     public void TestMethod()
     {
-        this.Values[0][0] = 1;
-        this.Values[0][1] = 1;
-        this.Values[0][2] = 1;
-        this.Values[0][3] = 1;
-        this.Values[0][4] = 1;
-        this.Values[0][5] = 1;
-        this.Values[0][6] = 1;
-
+        for (int i = 0; i < Values.Length; i++)
+        {
+            this.Values[0][i] = 1;
+        }
     }
 
 }
