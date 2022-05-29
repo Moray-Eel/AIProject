@@ -21,6 +21,7 @@ static void SplitData(double[][] allData, double splitPercent, int seed, out dou
         copy[r] = copy[i];
         copy[i] = tmp;
     }
+
     for (int i = 0; i < numTrainRows; ++i)
         trainData[i] = copy[i];
 
