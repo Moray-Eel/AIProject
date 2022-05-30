@@ -178,20 +178,24 @@ public class NeuralNetwork
         return 1 / (1 + eToPowerMinusX);
     }
 
-    public void Train(double[] values, double[] target)
+    /// <summary>
+    /// Dokonuje korekcji wag i biasów dla tablicy wejść values i 
+    /// tablicy wyjsc targets
+    /// </summary>
+    /// <param name="values"></param>
+    /// <param name="target"></param>
+    public void Train(double[] inputs, double[] targets)
     {
-        Values[0] = values;
-        TargetValues = target;
+        Values[0] = inputs;
+        TargetValues = targets;
         InitializeWeightsAndBiases(-1,1);
         ComputeValues();
         
-        Console.WriteLine(ComputeTotalError(target));
+        Console.WriteLine(ComputeTotalError(targets));
         double[] outputs = Values[^1];
         
         for (int i=0; i < Signals[^1].Length; i++)
-        {
             Signals[^1][i] = (TargetValues[i] - outputs[i]) * outputs[i] * (1 - outputs[i]);
-        }
 
         //Updating values for the hidden layer
         for (int i = 0; i < Signals[^1].Length; i++)
@@ -223,20 +227,16 @@ public class NeuralNetwork
             }
 
             for (int j = 0; j < UpdatedWeights[i - 1].Length; j++)
-            {
                 for (int k = 0; k < UpdatedWeights[i - 1][j].Length; k++)
                 {
                     UpdatedWeights[i-1][j][k] = Weights[i-1][j][k]  - Signals[i-1][k] * Values[i-1][j] * LearningRate;
                 }
-
-            }
-
         }
 
-        ChangeWeights();
+        ChangeWeightsAndBiases();
     }
 
-    public void ChangeWeights()
+    public void ChangeWeightsAndBiases()
     {
         for (int i = 0; i < Weights.Length; i++)
             for (int j = 0; j < Weights[i].Length; j++)
@@ -245,9 +245,10 @@ public class NeuralNetwork
                     Weights[i][j][k] = UpdatedWeights[i][j][k];
                 }
         for (int i = 0; i < Biases.Length; i++)
-        { }
-
-        }
+            for (int j = 0; j < Biases[i].Length; j++)
+            {
+                Biases[i][j] = UpdatedBiases[i][j];
+            }
     }
 
     //Zwraca iloczyn wektorów tablicy values z tablicą weigths w (v,i), gdzie i to iterator tablicy values, a j to numer 
