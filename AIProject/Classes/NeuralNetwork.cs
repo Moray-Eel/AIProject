@@ -226,13 +226,10 @@ public class NeuralNetwork
             {
                 for (int k = 0; k < UpdatedWeights[i - 1][j].Length; k++)
                 {
-                    UpdatedWeights[i-1][j][k] = Weights[i-1][j][k]  - Signals[i-1][k] * Values[(i-1)][j] * LearningRate;
+                    UpdatedWeights[i-1][j][k] = Weights[i-1][j][k]  - Signals[i-1][k] * Values[i-1][j] * LearningRate;
                 }
 
             }
-            //Values[i - 1][j];
-
-            //Values[i - 1][j];
 
         }
 
@@ -242,14 +239,14 @@ public class NeuralNetwork
     public void ChangeWeights()
     {
         for (int i = 0; i < Weights.Length; i++)
-        {
             for (int j = 0; j < Weights[i].Length; j++)
-            {
                 for (int k = 0; k < Weights[i][j].Length; k++)
                 {
                     Weights[i][j][k] = UpdatedWeights[i][j][k];
                 }
-            }
+        for (int i = 0; i < Biases.Length; i++)
+        { }
+
         }
     }
 
