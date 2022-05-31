@@ -28,10 +28,8 @@ static void SplitData(double[][] allData, double splitPercent, int seed, out dou
         testData[i] = copy[i + numTrainRows];
 }
 
-NeuralNetwork xd = new(new int[] { 7, 7, 4 });
-xd.InitializeWeightsAndBiases(-1, 1);
-xd.TestMethod();
-xd.ComputeValues();
+NeuralNetwork xd = new(new int[] { 2,1});
+
 
 Console.WriteLine(xd);
 
