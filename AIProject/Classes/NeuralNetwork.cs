@@ -52,6 +52,10 @@ public class NeuralNetwork
     //Współczynnik uczenia
     public double LearningRate = 0.05;
 
+    /// <summary>
+    /// Inicjalizuje tablice na podstawie tabeli layers
+    /// </summary>
+    /// <param name="layers"></param> 
     public NeuralNetwork(int[] layers)
     {
         //Tablica wartości dla poszczególnych neuronów
@@ -93,7 +97,9 @@ public class NeuralNetwork
                 UpdatedWeights[i][j] = new double[layers[i+1]];
             }
         }
-    }    /// <summary>
+    }  
+    
+    /// <summary>
     /// Inicjalizuje wagi i biasy z przedziału od min do max
     /// </summary>
     /// <param name="min"></param>
@@ -188,14 +194,33 @@ public class NeuralNetwork
     {
         Values[0] = inputs;
         TargetValues = targets;
-        InitializeWeightsAndBiases(-1,1);
+        InitializeWeightsAndBiases(0, 1);
         ComputeValues();
-        
+
+        /*  Weights[0][0][0] = 0.15;
+          Weights[0][0][1] = 0.25;
+          Weights[0][1][0] = 0.2;
+          Weights[0][1][1] = 0.3;
+          Weights[0][2][0] = 0.35;
+          Weights[0][2][1] = 0.35;
+
+          Weights[1][0][0] = 0.4;
+          Weights[1][0][1] = 0.5;
+          Weights[1][1][0] = 0.45;
+  *//*        Weights[1][1][1] = 0.55;
+          Weights[1][2][0] = 0.6;
+          Weights[1][2][1] = 0.6;
+  *//*
+
+          Values[1][2] = 1;
+  */
+        ComputeValues();
+
         Console.WriteLine(ComputeTotalError(targets));
         double[] outputs = Values[^1];
         
         for (int i=0; i < Signals[^1].Length; i++)
-            Signals[^1][i] = (TargetValues[i] - outputs[i]) * outputs[i] * (1 - outputs[i]);
+            Signals[^1][i] = (outputs[i] - TargetValues[i] ) * outputs[i] * (1 - outputs[i]);
 
         //Updating values for the hidden layer
         for (int i = 0; i < Signals[^1].Length; i++)
@@ -218,10 +243,10 @@ public class NeuralNetwork
                 for(int k = 0; k < Signals[i].Length; k++)
                 {
 
-                    sum += Signals[i][k] * Weights[i][j][k] * Values[i][j] * (1 - Values[i][j]);
+                    sum += Signals[i][k] * Weights[i][j][k] * Values[i][j] * (1 - Values[i][j]); 
                 }
 
-                Signals[i-1][j] = sum;
+                Signals[i - 1][j] = sum;
                 UpdatedBiases[i - 1][j] = Biases[i-1][j] - Signals[i-1][j] * LearningRate;
                 
             }
@@ -233,9 +258,12 @@ public class NeuralNetwork
                 }
         }
 
-        ChangeWeightsAndBiases();
+            ChangeWeightsAndBiases();
     }
 
+    /// <summary>
+    /// Przepisuje nowe wagi i biasy do tabel podstawowych
+    /// </summary>
     public void ChangeWeightsAndBiases()
     {
         for (int i = 0; i < Weights.Length; i++)
@@ -251,8 +279,13 @@ public class NeuralNetwork
             }
     }
 
-    //Zwraca iloczyn wektorów tablicy values z tablicą weigths w (v,i), gdzie i to iterator tablicy values, a j to numer 
-    //neuronu, dla którego obliczamy wagu
+    /// <summary>
+    /// Zwraca iloczyn wektorów tablicy values z tablicą weigths w (v,i), gdzie i to iterator tablicy values, a j to numer 
+    /// neuronu, dla którego obliczamy wagi
+    /// </summary>
+    /// <param name="values"></param>
+    /// <param name="weights"></param>
+    /// <param name="j"></param>
     public static double Sum(double[] values, double[][] weights, int j) => values.Select((v, i) => v * weights[i][j]).Sum();
     public void TestMethod()
     {
@@ -261,12 +294,13 @@ public class NeuralNetwork
             this.Values[0][i] = 1;
         }
     }
-    public void TestMethod2()
-    {
 
-    }
-
-    public double[][] ReadFromFile(string filePath) // funkcja czytająca dane z pliku, zwracająca je w postaci macierzy dwuwymiarowej typu double
+    /// <summary>
+    /// funkcja czytająca dane z pliku, zwracająca je w postaci macierzy dwuwymiarowej typu double
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public double[][] ReadFromFile(string filePath) 
     {
         int i = 0;
 

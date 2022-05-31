@@ -28,18 +28,7 @@ static void SplitData(double[][] allData, double splitPercent, int seed, out dou
         testData[i] = copy[i + numTrainRows];
 }
 
-NeuralNetwork xd = new(new int[] { 3,2, 1});
-
-
-
-    xd.Train(new double[] { 0, 0, 0 }, new double[] { 0 });
-    xd.Train(new double[] { 1, 0, 0 }, new double[] { 1 });
-    xd.Train(new double[] { 0, 1, 0 }, new double[] { 1 });
-    xd.Train(new double[] { 0, 0, 1 }, new double[] { 1 });
-    xd.Train(new double[] { 1, 1, 0 }, new double[] { 1 });
-    xd.Train(new double[] { 0, 1, 1 }, new double[] { 1 });
-    xd.Train(new double[] { 1, 0, 1 }, new double[] { 1 });
-    xd.Train(new double[] { 1, 1, 1 }, new double[] { 1 });
+NeuralNetwork xd = new(new int[] { 2,1});
 
 
 Console.WriteLine(xd);
