@@ -49,15 +49,29 @@ public class NeuralNetwork
     //Wartości z poprawnymi wynikami dla poszczególnych danych wejściowych
     public double[] TargetValues { get; set; }
 
+
+    public double[][] AllData { get; set; }
+    public double[][] TrainingData;
+    public double[][] TestData;
+    public double[][] TargetData{ get; set; }
     //Współczynnik uczenia
-    public double LearningRate = 0.05;
+    public double LearningRate = 0.01;
 
     /// <summary>
     /// Inicjalizuje tablice na podstawie tabeli layers
     /// </summary>
     /// <param name="layers"></param> 
-    public NeuralNetwork(int[] layers)
+    public NeuralNetwork(int[] layers, string[] dataFiles)
     {
+        if (dataFiles.Length != 2)
+            throw new ArgumentOutOfRangeException(nameof(dataFiles));
+
+        AllData = ReadFromFile(dataFiles[0]);
+        TargetData = ReadFromFile(dataFiles[1]);
+
+        if (AllData.Length != TargetData.Length)
+            throw new ArgumentOutOfRangeException();
+
         //Tablica wartości dla poszczególnych neuronów
         Values = new double[layers.Length][];
         
@@ -123,6 +137,7 @@ public class NeuralNetwork
                 Biases[i][j] = _randomizer.NextDouble(min, max);
     }
 
+
     /// <summary>
     /// Przyjmuje tablicę wartości dla pierwszej warstwy
     /// </summary>
@@ -168,7 +183,7 @@ public class NeuralNetwork
         double[] outputs = Values[^1];
 
         if (outputs.Length != targetValues.Length)
-            throw new ArgumentOutOfRangeException(nameof(outputs.Length));
+            throw new ArgumentOutOfRangeException(nameof(targetValues));
 
         return outputs.Select((v, i) => 0.5 * Math.Pow(targetValues[i] - v,2)).Sum();
     }
@@ -184,6 +199,18 @@ public class NeuralNetwork
         return 1 / (1 + eToPowerMinusX);
     }
 
+
+    public void run()
+    {
+       for(int j=0; j<2;j++)
+        {
+            for(int i = 0; i < AllData.Length; i++)
+            {
+                Train(AllData[i], TargetData[i]);
+            }
+        }
+    }
+
     /// <summary>
     /// Dokonuje korekcji wag i biasów dla tablicy wejść values i 
     /// tablicy wyjsc targets
@@ -194,26 +221,7 @@ public class NeuralNetwork
     {
         Values[0] = inputs;
         TargetValues = targets;
-        InitializeWeightsAndBiases(0, 1);
-        ComputeValues();
-
-        /*  Weights[0][0][0] = 0.15;
-          Weights[0][0][1] = 0.25;
-          Weights[0][1][0] = 0.2;
-          Weights[0][1][1] = 0.3;
-          Weights[0][2][0] = 0.35;
-          Weights[0][2][1] = 0.35;
-
-          Weights[1][0][0] = 0.4;
-          Weights[1][0][1] = 0.5;
-          Weights[1][1][0] = 0.45;
-  *//*        Weights[1][1][1] = 0.55;
-          Weights[1][2][0] = 0.6;
-          Weights[1][2][1] = 0.6;
-  *//*
-
-          Values[1][2] = 1;
-  */
+        InitializeWeightsAndBiases(-1, 1);
         ComputeValues();
 
         Console.WriteLine(ComputeTotalError(targets));
@@ -300,10 +308,10 @@ public class NeuralNetwork
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public double[][] ReadFromFile(string filePath) 
+    public static double[][] ReadFromFile(string filePath) 
     {
         int i = 0;
-
+        
         int lineCount = File.ReadAllLines(filePath).Length;
 
         double[][] matrix = new double[lineCount][];
@@ -311,19 +319,43 @@ public class NeuralNetwork
         foreach (string line in System.IO.File.ReadLines(filePath))
         {
             string[] split = line.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            double[] values = new double[split.Length];
+            matrix[i] = new double[split.Length];  
 
-            for (int n = 0; n < split.Length; n++)
-                values[n] = double.Parse(split[n]);
-
-
-
-            for (int j = 0; j < values.Length; j++)
-                matrix[i][j] = values[j];
-
+            for (int j = 0; j < split.Length; j++)
+            {
+                matrix[i][j] = double.Parse(split[j], System.Globalization.CultureInfo.InvariantCulture);
+                
+            }
             i++;
         }
         return matrix;
     }
+
+    static void SplitData(double[][] allData, double splitPercent, out double[][] trainData, out double[][] testData)
+    {
+        Random rnd = new(1);
+        int totalRows = allData.Length;
+        int numTrainRows = (int)(totalRows * splitPercent);
+        int numTestRows = totalRows - numTrainRows;
+        trainData = new double[numTrainRows][];
+        testData = new double[numTestRows][];
+
+        double[][] copy = new double[allData.Length][];
+        for (int i = 0; i < copy.Length; ++i)
+            copy[i] = allData[i];
+
+        for (int i = 0; i < copy.Length; ++i)
+        {
+            int r = rnd.Next(i, copy.Length); // Fisher-Yates
+            (copy[i], copy[r]) = (copy[r], copy[i]);
+        }
+
+        for (int i = 0; i < numTrainRows; ++i)
+            trainData[i] = copy[i];
+
+        for (int i = 0; i < numTestRows; ++i)
+            testData[i] = copy[i + numTrainRows];
+    }
+
 
 }
