@@ -202,11 +202,13 @@ public class NeuralNetwork
 
     public void run()
     {
-       for(int j=0; j<2;j++)
+        SplitData(AllData, 0.9, out TrainingData, out TestData);
+        for(int j=0; j<1;j++)
         {
-            for(int i = 0; i < AllData.Length; i++)
+            Console.WriteLine($"\n Epoch {j} \n");
+            for(int i = 0; i < TrainingData.Length; i++)
             {
-                Train(AllData[i], TargetData[i]);
+                Train(TrainingData[i], TargetData[i]);
             }
         }
     }
@@ -227,6 +229,7 @@ public class NeuralNetwork
         Console.WriteLine(ComputeTotalError(targets));
         double[] outputs = Values[^1];
         
+        //Gradient jako wynik - wartosc oczekiwana przemnozona przez pochodna funkcji sigmoidalnej od naszego wyniku
         for (int i=0; i < Signals[^1].Length; i++)
             Signals[^1][i] = (outputs[i] - TargetValues[i] ) * outputs[i] * (1 - outputs[i]);
 
@@ -237,7 +240,8 @@ public class NeuralNetwork
             for(int j = 0; j < UpdatedWeights[^1].Length; j++)
             {
                 
-                //Od każdej wagi odejmujemy gradient przemnożony przez wartość learning rate
+                //
+                //aktualizacja wag wg wzoru -> Waga - jej gradient * wspolczynnik uczenia * wartosc neuronu z poprzedniej (lewej) warstwy 
                 UpdatedWeights[^1][j][i] = Weights[^1][j][i] - Signals[^1][i] * LearningRate * Values[^2][j];
             }
         }  
@@ -250,11 +254,15 @@ public class NeuralNetwork
                 double sum = 0;
                 for(int k = 0; k < Signals[i].Length; k++)
                 {
-
+                    //Obliczenie gradientu dla wrstwy ukrytej jako sumy mnożeń pochodnej funkcji sigm od wyjscia tej warstwy
+                    //i gradientu z warstwy następnej (w prawo)  () 
+                    
                     sum += Signals[i][k] * Weights[i][j][k] * Values[i][j] * (1 - Values[i][j]); 
                 }
 
                 Signals[i - 1][j] = sum;
+
+                //Aktualizacja  wagi wg wzoru -> bias stary - gradient * współczynnik uczenia
                 UpdatedBiases[i - 1][j] = Biases[i-1][j] - Signals[i-1][j] * LearningRate;
                 
             }
@@ -262,6 +270,7 @@ public class NeuralNetwork
             for (int j = 0; j < UpdatedWeights[i - 1].Length; j++)
                 for (int k = 0; k < UpdatedWeights[i - 1][j].Length; k++)
                 {
+                    //Aktualizacja wag wg wzoru -> stara waga - jej gradient *wartosc neuronu z poprzedniej (lewej) warstwy * wspolczynnik uczenia
                     UpdatedWeights[i-1][j][k] = Weights[i-1][j][k]  - Signals[i-1][k] * Values[i-1][j] * LearningRate;
                 }
         }
@@ -316,9 +325,9 @@ public class NeuralNetwork
 
         double[][] matrix = new double[lineCount][];
 
-        foreach (string line in System.IO.File.ReadLines(filePath))
+        foreach (string line in File.ReadLines(filePath))
         {
-            string[] split = line.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] split = line.Split(new char[] { ' ', '\t', '\r', '\n', ','}, StringSplitOptions.RemoveEmptyEntries);
             matrix[i] = new double[split.Length];  
 
             for (int j = 0; j < split.Length; j++)
