@@ -237,15 +237,18 @@ public class NeuralNetwork
 
     public void Test(double[][] TestData, double[][] TargetValues)
     {
-        double[] outputs = Values[^1];
         CorrectExamples = 0;
         for(int i = 0; i < TestData.Length; i++)
         {
             Values[0] = TestData[i];
             ComputeValues();
+            double[] outputs = Values[^1];
+
+            var error = outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum();
+
             if (outputs.Select((v, i) => Math.Abs(TargetValues[i+TrainingData.Length][0] - v)).Sum() < 0.5)
             {
-                var error = outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum();
+                var errorcheck = outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum();
                 CorrectExamples++;
             }
 
