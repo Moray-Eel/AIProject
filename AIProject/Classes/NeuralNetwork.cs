@@ -55,8 +55,8 @@ public class NeuralNetwork
     public double[][] TrainingData;
     public double[][] TestData;
     public double[][] TargetData;
-    //Współczynnik uczenia
-    public double LearningRate = 0.0001;
+    //Współczynnik uczenia00
+    public double LearningRate = 0.1;
 
     /// <summary>
     /// Inicjalizuje tablice na podstawie tabeli layers
@@ -170,7 +170,7 @@ public class NeuralNetwork
                 sum = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i-1][j];
                 if(i != Values.GetLength(0)-1)
                 {
-                    Values[i][j] = ComputeRelu(sum);
+                    Values[i][j] = ComputeLeakyRelu(sum);
                 }
                 else
                     Values[i][j] = ComputeSigmoid(sum); 
@@ -194,6 +194,7 @@ public class NeuralNetwork
 
         if (outputs.Select((v, i) => Math.Abs(targetValues[i] - v)).Sum() < 0.5);
         {
+            var error = (outputs.Select((v, i) => Math.Abs(targetValues[i] - v)).Sum() < 0.5);
             CorrectExamples++;
         }
             
@@ -212,11 +213,11 @@ public class NeuralNetwork
     }
 
 
-    public static double ComputeRelu(double x)
+    public static double ComputeLeakyRelu(double x)
     {
-        return (x> 0) ? x : 0;
+        return (x > 0) ? x : 0.01 * x;
     }
-    public void run()
+    public void Run()
     {
         InitializeWeightsAndBiases(-1, 1);
         SplitData(AllData, 0.9, out TrainingData, out TestData, ref TargetData);
@@ -231,6 +232,25 @@ public class NeuralNetwork
             Console.WriteLine($"\nAccuracy:" + CorrectExamples/TargetData.Length);
         }
 
+        Test(TestData, TargetData);
+    }
+
+    public void Test(double[][] TestData, double[][] TargetValues)
+    {
+        double[] outputs = Values[^1];
+        CorrectExamples = 0;
+        for(int i = 0; i < TestData.Length; i++)
+        {
+            Values[0] = TestData[i];
+            ComputeValues();
+            if (outputs.Select((v, i) => Math.Abs(TargetValues[i+TrainingData.Length][0] - v)).Sum() < 0.5)
+            {
+                var error = outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum();
+                CorrectExamples++;
+            }
+
+        }
+        Console.WriteLine($"Accuracy : {CorrectExamples/TargetValues.Length}");
     }
 
     /// <summary>
@@ -276,7 +296,7 @@ public class NeuralNetwork
                     //Obliczenie gradientu dla wrstwy ukrytej jako sumy mnożeń pochodnej funkcji sigm od wyjscia tej warstwy
                     //i gradientu z warstwy następnej (w prawo)  () 
                     
-                    sum += Signals[i][k] * Weights[i][j][k] * (Values[i][j] > 0 ? 1 : 0); 
+                    sum += Signals[i][k] * Weights[i][j][k] * (Values[i][j] > 0 ? 1 : 0.01); 
                 }
 
                 Signals[i - 1][j] = sum;
