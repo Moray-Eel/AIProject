@@ -45,6 +45,7 @@ public class NeuralNetwork
     //j -> numer neuronu w warstwie
     //Jeśli nasza sieć ma N warstw to -> Signals[N-1][][]
     public double[][] Signals { get; set; }
+    public double CorrectExamples;
 
     //Wartości z poprawnymi wynikami dla poszczególnych danych wejściowych
     public double[] TargetValues { get; set; }
@@ -53,9 +54,9 @@ public class NeuralNetwork
     public double[][] AllData { get; set; }
     public double[][] TrainingData;
     public double[][] TestData;
-    public double[][] TargetData{ get; set; }
+    public double[][] TargetData;
     //Współczynnik uczenia
-    public double LearningRate = 0.01;
+    public double LearningRate = 0.0001;
 
     /// <summary>
     /// Inicjalizuje tablice na podstawie tabeli layers
@@ -167,8 +168,14 @@ public class NeuralNetwork
             for (int j = 0; j < Values[i].Length; j++)
             {
                 sum = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i-1][j];
-                Values[i][j] = ComputeSigmoid(sum); 
+                if(i != Values.GetLength(0)-1)
+                {
+                    Values[i][j] = ComputeRelu(sum);
+                }
+                else
+                    Values[i][j] = ComputeSigmoid(sum); 
             }
+
     }
 
     /// <summary>
@@ -185,6 +192,11 @@ public class NeuralNetwork
         if (outputs.Length != targetValues.Length)
             throw new ArgumentOutOfRangeException(nameof(targetValues));
 
+        if (outputs.Select((v, i) => Math.Abs(targetValues[i] - v)).Sum() < 0.5);
+        {
+            CorrectExamples++;
+        }
+            
         return outputs.Select((v, i) => 0.5 * Math.Pow(targetValues[i] - v,2)).Sum();
     }
 
@@ -200,17 +212,25 @@ public class NeuralNetwork
     }
 
 
+    public static double ComputeRelu(double x)
+    {
+        return (x> 0) ? x : 0;
+    }
     public void run()
     {
-        SplitData(AllData, 0.9, out TrainingData, out TestData);
+        InitializeWeightsAndBiases(-1, 1);
+        SplitData(AllData, 0.9, out TrainingData, out TestData, ref TargetData);
         for(int j=0; j<1;j++)
         {
+            CorrectExamples = 0;
             Console.WriteLine($"\n Epoch {j} \n");
             for(int i = 0; i < TrainingData.Length; i++)
             {
                 Train(TrainingData[i], TargetData[i]);
             }
+            Console.WriteLine($"\nAccuracy:" + CorrectExamples/TargetData.Length);
         }
+
     }
 
     /// <summary>
@@ -223,7 +243,6 @@ public class NeuralNetwork
     {
         Values[0] = inputs;
         TargetValues = targets;
-        InitializeWeightsAndBiases(-1, 1);
         ComputeValues();
 
         Console.WriteLine(ComputeTotalError(targets));
@@ -257,7 +276,7 @@ public class NeuralNetwork
                     //Obliczenie gradientu dla wrstwy ukrytej jako sumy mnożeń pochodnej funkcji sigm od wyjscia tej warstwy
                     //i gradientu z warstwy następnej (w prawo)  () 
                     
-                    sum += Signals[i][k] * Weights[i][j][k] * Values[i][j] * (1 - Values[i][j]); 
+                    sum += Signals[i][k] * Weights[i][j][k] * (Values[i][j] > 0 ? 1 : 0); 
                 }
 
                 Signals[i - 1][j] = sum;
@@ -340,7 +359,7 @@ public class NeuralNetwork
         return matrix;
     }
 
-    static void SplitData(double[][] allData, double splitPercent, out double[][] trainData, out double[][] testData)
+    static void SplitData(double[][] allData, double splitPercent, out double[][] trainData, out double[][] testData, ref double[][] targetData) 
     {
         Random rnd = new(1);
         int totalRows = allData.Length;
@@ -348,6 +367,7 @@ public class NeuralNetwork
         int numTestRows = totalRows - numTrainRows;
         trainData = new double[numTrainRows][];
         testData = new double[numTestRows][];
+        
 
         double[][] copy = new double[allData.Length][];
         for (int i = 0; i < copy.Length; ++i)
@@ -357,6 +377,7 @@ public class NeuralNetwork
         {
             int r = rnd.Next(i, copy.Length); // Fisher-Yates
             (copy[i], copy[r]) = (copy[r], copy[i]);
+            (targetData[i], targetData[r]) = (targetData[r], targetData[i]);
         }
 
         for (int i = 0; i < numTrainRows; ++i)
