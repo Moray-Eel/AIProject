@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using AIProject.Classes;
-using AIProject.Classes.Extensions;
+﻿using AIProject.Classes.Extensions;
 
 
 namespace AIProject.Classes;
@@ -245,7 +238,7 @@ public class NeuralNetwork
                 Train(TrainingData[i], TargetData[i]);
             }
 
-            Console.WriteLine($"\nTraining accuracy: {CorrectExamples / TrainingData.Length}");
+            Console.WriteLine($"\nTraining accuracy in epoch {j+1} : {(CorrectExamples / TrainingData.Length).ToString("R20")}");
             ShuffleData(TrainingData);
         }
 
