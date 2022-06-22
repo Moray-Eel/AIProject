@@ -56,7 +56,7 @@ public class NeuralNetwork
     public double[][] TestData;
     public double[][] TargetData;
     //Współczynnik uczenia00
-    public double LearningRate = 0.1;
+    public double LearningRate;
     public int NumberOfEpochs { get; set; }
     public double SplitFactor { get; set; }
     public bool ReluInHidden { get; set; }
@@ -67,7 +67,7 @@ public class NeuralNetwork
     /// Inicjalizuje tablice na podstawie tabeli layers
     /// </summary>
     /// <param name="layers"></param> 
-    public NeuralNetwork(int[] layers, string[] dataFiles, int numberOfEpochs, double splitFactor, bool reluInHidden, double generatorLimit)
+    public NeuralNetwork(int[] layers, string[] dataFiles, int numberOfEpochs, double splitFactor, bool reluInHidden, double generatorLimit, double learningRate)
     {
         if (dataFiles.Length != 2)
             throw new ArgumentOutOfRangeException(nameof(dataFiles));
@@ -102,6 +102,8 @@ public class NeuralNetwork
         ReluInHidden = reluInHidden;
 
         GeneratorLimit = generatorLimit;
+
+        LearningRate = learningRate;
 
         for (int i = 0; i < layers.Length; i++)
         {
@@ -314,7 +316,7 @@ public class NeuralNetwork
                     //Obliczenie gradientu dla wrstwy ukrytej jako sumy mnożeń pochodnej funkcji sigm od wyjscia tej warstwy
                     //i gradientu z warstwy następnej (w prawo)  () 
 
-                    sum += Signals[i][k] * Weights[i][j][k] * (ReluInHidden ==true :(Values[i][j] > 0 ? 1 : 0.01);/*Values[i][j] * (1 - Values[i][j]);*/
+                    sum += Signals[i][k] * Weights[i][j][k] * (ReluInHidden is true ? (Values[i][j] > 0 ? 1 : 0.01) : Values[i][j] * (1 - Values[i][j]));
                 }
 
                 Signals[i - 1][j] = sum;
