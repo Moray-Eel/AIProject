@@ -181,12 +181,12 @@ public class NeuralNetwork
             for (int j = 0; j < Values[i].Length; j++)
             {
                 sum = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i - 1][j];
-/*                if (i != Values.GetLength(0) - 1)
+                if (i != Values.GetLength(0) - 1 && ReluInHidden)
                 {
                     Values[i][j] = ComputeLeakyRelu(sum);
                 }
                 else
-*/                    Values[i][j] = ComputeSigmoid(sum);
+                    Values[i][j] = ComputeSigmoid(sum);
             }
 
     }
@@ -314,7 +314,7 @@ public class NeuralNetwork
                     //Obliczenie gradientu dla wrstwy ukrytej jako sumy mnożeń pochodnej funkcji sigm od wyjscia tej warstwy
                     //i gradientu z warstwy następnej (w prawo)  () 
 
-                    sum += Signals[i][k] * Weights[i][j][k] * (Values[i][j] > 0 ? 1 : 0.01);/*Values[i][j] * (1 - Values[i][j]);*/
+                    sum += Signals[i][k] * Weights[i][j][k] * (ReluInHidden ==true :(Values[i][j] > 0 ? 1 : 0.01);/*Values[i][j] * (1 - Values[i][j]);*/
                 }
 
                 Signals[i - 1][j] = sum;
