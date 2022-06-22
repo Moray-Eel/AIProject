@@ -14,8 +14,8 @@ namespace AIProject.Classes;
 public class NeuralNetwork
 {
 
-    private readonly Random _randomizer = new ();
-    
+    private readonly Random _randomizer = new();
+
     //Wartości dla każdej warstwy -> Values[i][j] gdzie i -> numer warstwy,
     //j -> numer neuronu
     public double[][] Values { get; set; }
@@ -41,7 +41,7 @@ public class NeuralNetwork
     //Jeśli nasza sieć ma N warstw to -> UpdatedWeights[N-1][][]
     public double[][][] UpdatedWeights { get; set; }
 
-    //Wartości gradientów dla neuronów w warstwach gdzie i-> numer warstwy,
+    //Wartości gradientów dla neuronów w warstwach gdzie i-> numer warstwy,s
     //j -> numer neuronu w warstwie
     //Jeśli nasza sieć ma N warstw to -> Signals[N-1][][]
     public double[][] Signals { get; set; }
@@ -57,12 +57,15 @@ public class NeuralNetwork
     public double[][] TargetData;
     //Współczynnik uczenia00
     public double LearningRate = 0.1;
+    public int NumberOfEpochs { get; set; }
+    public double SplitFactor { get; set; }
+
 
     /// <summary>
     /// Inicjalizuje tablice na podstawie tabeli layers
     /// </summary>
     /// <param name="layers"></param> 
-    public NeuralNetwork(int[] layers, string[] dataFiles)
+    public NeuralNetwork(int[] layers, string[] dataFiles, int numberOfEpochs, double splitFactor)
     {
         if (dataFiles.Length != 2)
             throw new ArgumentOutOfRangeException(nameof(dataFiles));
@@ -75,18 +78,18 @@ public class NeuralNetwork
 
         //Tablica wartości dla poszczególnych neuronów
         Values = new double[layers.Length][];
-        
+
         //Tablice biasów 
-        Biases = new double[layers.Length-1][];
-        UpdatedBiases = new double[layers.Length-1][];
-        
+        Biases = new double[layers.Length - 1][];
+        UpdatedBiases = new double[layers.Length - 1][];
+
         //Tablice wag
-        Weights = new double[layers.Length-1][][];
+        Weights = new double[layers.Length - 1][][];
         UpdatedWeights = new double[layers.Length - 1][][];
-        
+
         //Tablica gradientu
         Signals = new double[layers.Length - 1][];
-        
+
         //Tablica spodziewanych wyników
         TargetValues = new double[layers[0]];
 
@@ -96,30 +99,33 @@ public class NeuralNetwork
             Values[i] = new double[layers[i]];
         }
 
-        for (int i = 0; i < layers.Length-1 ; i++)
+        for (int i = 0; i < layers.Length - 1; i++)
         {
 
             Weights[i] = new double[layers[i]][];
             UpdatedWeights[i] = new double[layers[i]][];
-            
-            Signals[i] = new double[layers[i+1]];
-            Biases[i] = new double[layers[i+1]];
-            UpdatedBiases[i] = new double[layers[i+1]];
+
+            Signals[i] = new double[layers[i + 1]];
+            Biases[i] = new double[layers[i + 1]];
+            UpdatedBiases[i] = new double[layers[i + 1]];
 
             for (int j = 0; j < Weights[i].Length; j++)
             {
-                Weights[i][j] = new double[layers[i+1]];
-                UpdatedWeights[i][j] = new double[layers[i+1]];
+                Weights[i][j] = new double[layers[i + 1]];
+                UpdatedWeights[i][j] = new double[layers[i + 1]];
             }
         }
-    }  
-    
+
+        NumberOfEpochs = numberOfEpochs;
+        SplitFactor = splitFactor;
+    }
+
     /// <summary>
     /// Inicjalizuje wagi i biasy z przedziału od min do max
     /// </summary>
     /// <param name="min"></param>
     /// <param name="max"></param>
-    public void InitializeWeightsAndBiases(int min, int max)
+    public void InitializeWeightsAndBiases(double min, double max)
     {
 
         //Inicjalizacja losowych wag z przedziału min do max
@@ -159,7 +165,7 @@ public class NeuralNetwork
     /// Oblicza wartości dla neuronów dla warstw > 1 poprzez
     ///mnożenie wektora wartości z poprzedniej warstwy z wektorem wag pomiędzy warstwami oraz odjęciu biasu
     /// </summary>
-   
+
     public void ComputeValues()
     {
         double sum;
@@ -167,13 +173,13 @@ public class NeuralNetwork
         for (int i = 1; i < Values.GetLength(0); i++)
             for (int j = 0; j < Values[i].Length; j++)
             {
-                sum = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i-1][j];
-                if(i != Values.GetLength(0)-1)
+                sum = Sum(Values[i - 1], Weights[i - 1], j) + Biases[i - 1][j];
+/*                if (i != Values.GetLength(0) - 1)
                 {
                     Values[i][j] = ComputeLeakyRelu(sum);
                 }
                 else
-                    Values[i][j] = ComputeSigmoid(sum); 
+*/                    Values[i][j] = ComputeSigmoid(sum);
             }
 
     }
@@ -192,13 +198,13 @@ public class NeuralNetwork
         if (outputs.Length != targetValues.Length)
             throw new ArgumentOutOfRangeException(nameof(targetValues));
 
-        if (outputs.Select((v, i) => Math.Abs(targetValues[i] - v)).Sum() < 0.5);
+        if (outputs.Select((v, i) => Math.Abs(targetValues[i] - v)).Sum() < 0.5)
         {
             var error = (outputs.Select((v, i) => Math.Abs(targetValues[i] - v)).Sum() < 0.5);
             CorrectExamples++;
         }
-            
-        return outputs.Select((v, i) => 0.5 * Math.Pow(targetValues[i] - v,2)).Sum();
+
+        return outputs.Select((v, i) => 0.5 * Math.Pow(targetValues[i] - v, 2)).Sum();
     }
 
     /// <summary>
@@ -219,17 +225,19 @@ public class NeuralNetwork
     }
     public void Run()
     {
-        InitializeWeightsAndBiases(-1, 1);
-        SplitData(AllData, 0.9, out TrainingData, out TestData, ref TargetData);
-        for(int j=0; j<1;j++)
+        InitializeWeightsAndBiases(-0.5, 0.5);
+        SplitData(AllData, SplitFactor, out TrainingData, out TestData, ref TargetData);
+        for (int j = 0; j < NumberOfEpochs; j++)
         {
             CorrectExamples = 0;
             Console.WriteLine($"\n Epoch {j} \n");
-            for(int i = 0; i < TrainingData.Length; i++)
+            for (int i = 0; i < TrainingData.Length; i++)
             {
                 Train(TrainingData[i], TargetData[i]);
             }
-            Console.WriteLine($"\nAccuracy:" + CorrectExamples/TargetData.Length);
+
+            Console.WriteLine($"\nTraining accuracy: {CorrectExamples / TrainingData.Length}");
+            ShuffleData(TrainingData);
         }
 
         Test(TestData, TargetData);
@@ -238,7 +246,7 @@ public class NeuralNetwork
     public void Test(double[][] TestData, double[][] TargetValues)
     {
         CorrectExamples = 0;
-        for(int i = 0; i < TestData.Length; i++)
+        for (int i = 0; i < TestData.Length; i++)
         {
             Values[0] = TestData[i];
             ComputeValues();
@@ -246,14 +254,14 @@ public class NeuralNetwork
 
             var error = outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum();
 
-            if (outputs.Select((v, i) => Math.Abs(TargetValues[i+TrainingData.Length][0] - v)).Sum() < 0.5)
+            if (outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum() < 0.5)
             {
                 var errorcheck = outputs.Select((v, i) => Math.Abs(TargetValues[i + TrainingData.Length][0] - v)).Sum();
                 CorrectExamples++;
             }
 
         }
-        Console.WriteLine($"Accuracy : {CorrectExamples/TargetValues.Length}");
+        Console.WriteLine($"\nTest accuracy: {CorrectExamples / TestData.Length}");
     }
 
     /// <summary>
@@ -270,54 +278,54 @@ public class NeuralNetwork
 
         Console.WriteLine(ComputeTotalError(targets));
         double[] outputs = Values[^1];
-        
+
         //Gradient jako wynik - wartosc oczekiwana przemnozona przez pochodna funkcji sigmoidalnej od naszego wyniku
-        for (int i=0; i < Signals[^1].Length; i++)
-            Signals[^1][i] = (outputs[i] - TargetValues[i] ) * outputs[i] * (1 - outputs[i]);
+        for (int i = 0; i < Signals[^1].Length; i++)
+            Signals[^1][i] = (outputs[i] - TargetValues[i]) * outputs[i] * (1 - outputs[i]);
 
         //Updating values for the hidden layer
         for (int i = 0; i < Signals[^1].Length; i++)
         {
             UpdatedBiases[^1][i] = Biases[^1][i] - Signals[^1][i] * LearningRate;
-            for(int j = 0; j < UpdatedWeights[^1].Length; j++)
+            for (int j = 0; j < UpdatedWeights[^1].Length; j++)
             {
-                
+
                 //
                 //aktualizacja wag wg wzoru -> Waga - jej gradient * wspolczynnik uczenia * wartosc neuronu z poprzedniej (lewej) warstwy 
                 UpdatedWeights[^1][j][i] = Weights[^1][j][i] - Signals[^1][i] * LearningRate * Values[^2][j];
             }
-        }  
-        for(int i = UpdatedWeights.Length-1; i>0 ;i--)
+        }
+        for (int i = UpdatedWeights.Length - 1; i > 0; i--)
         {
 
-            for(int j = 0; j < UpdatedWeights[i].Length; j++)
+            for (int j = 0; j < UpdatedWeights[i].Length; j++)
             {
 
                 double sum = 0;
-                for(int k = 0; k < Signals[i].Length; k++)
+                for (int k = 0; k < Signals[i].Length; k++)
                 {
                     //Obliczenie gradientu dla wrstwy ukrytej jako sumy mnożeń pochodnej funkcji sigm od wyjscia tej warstwy
                     //i gradientu z warstwy następnej (w prawo)  () 
-                    
-                    sum += Signals[i][k] * Weights[i][j][k] * (Values[i][j] > 0 ? 1 : 0.01); 
+
+                    sum += Signals[i][k] * Weights[i][j][k] * (Values[i][j] > 0 ? 1 : 0.01);/*Values[i][j] * (1 - Values[i][j]);*/
                 }
 
                 Signals[i - 1][j] = sum;
 
                 //Aktualizacja  wagi wg wzoru -> bias stary - gradient * współczynnik uczenia
-                UpdatedBiases[i - 1][j] = Biases[i-1][j] - Signals[i-1][j] * LearningRate;
-                
+                UpdatedBiases[i - 1][j] = Biases[i - 1][j] - Signals[i - 1][j] * LearningRate;
+
             }
 
             for (int j = 0; j < UpdatedWeights[i - 1].Length; j++)
                 for (int k = 0; k < UpdatedWeights[i - 1][j].Length; k++)
                 {
                     //Aktualizacja wag wg wzoru -> stara waga - jej gradient *wartosc neuronu z poprzedniej (lewej) warstwy * wspolczynnik uczenia
-                    UpdatedWeights[i-1][j][k] = Weights[i-1][j][k]  - Signals[i-1][k] * Values[i-1][j] * LearningRate;
+                    UpdatedWeights[i - 1][j][k] = Weights[i - 1][j][k] - Signals[i - 1][k] * Values[i - 1][j] * LearningRate;
                 }
         }
 
-            ChangeWeightsAndBiases();
+        ChangeWeightsAndBiases();
     }
 
     /// <summary>
@@ -359,38 +367,39 @@ public class NeuralNetwork
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static double[][] ReadFromFile(string filePath) 
+    public static double[][] ReadFromFile(string filePath)
     {
         int i = 0;
-        
+
         int lineCount = File.ReadAllLines(filePath).Length;
 
         double[][] matrix = new double[lineCount][];
 
         foreach (string line in File.ReadLines(filePath))
         {
-            string[] split = line.Split(new char[] { ' ', '\t', '\r', '\n', ','}, StringSplitOptions.RemoveEmptyEntries);
-            matrix[i] = new double[split.Length];  
+            string[] split = line.Split(new char[] { ' ', '\t', '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            matrix[i] = new double[split.Length];
 
             for (int j = 0; j < split.Length; j++)
             {
                 matrix[i][j] = double.Parse(split[j], System.Globalization.CultureInfo.InvariantCulture);
-                
+
             }
             i++;
         }
         return matrix;
     }
 
-    static void SplitData(double[][] allData, double splitPercent, out double[][] trainData, out double[][] testData, ref double[][] targetData) 
+    public  void SplitData(double[][] allData, double splitPercent, out double[][] trainData, out double[][] testData, ref double[][] targetData)
     {
+
         Random rnd = new(1);
         int totalRows = allData.Length;
         int numTrainRows = (int)(totalRows * splitPercent);
         int numTestRows = totalRows - numTrainRows;
         trainData = new double[numTrainRows][];
         testData = new double[numTestRows][];
-        
+
 
         double[][] copy = new double[allData.Length][];
         for (int i = 0; i < copy.Length; ++i)
@@ -410,5 +419,26 @@ public class NeuralNetwork
             testData[i] = copy[i + numTrainRows];
     }
 
+
+
+    static double[][] ShuffleData(double[][] allData)
+    {
+        Random rnd = new(1);
+
+        double[][] copy = new double[allData.Length][];
+        for (int i = 0; i < copy.Length; ++i)
+            copy[i] = allData[i];
+
+        for (int i = 0; i < copy[i].Length; ++i)
+        {
+            int r = rnd.Next(0, copy[i].Length-1); // Fisher-Yates
+            for (int j = 0; j < copy[i].Length; ++j)
+            {
+                (copy[j][i], copy[j][r]) = (copy[j][r], copy[j][i]);
+
+            }
+        }
+        return copy;
+    }
 
 }

@@ -10,7 +10,8 @@
 //wyjsciowej liczbe 2. Warstwy ukryte są tworzeone dynamicznie i można je modyfikować dowolnie
 
 
-NeuralNetwork neuralNetwork = new(new int[] { 4,3,1 }, new string[] { @"C:\Users\slikm\Pulpit\IrisInput.tsv", @"C:\Users\slikm\Pulpit\IrisTarget2.tsv" });
+NeuralNetwork neuralNetwork = new(new int[] { 4,8,4,2,1 }, new string[] { @"C:\Users\slikm\Pulpit\banknoteinput.csv", @"C:\Users\slikm\Pulpit\banknoteoutput.csv" }, 3, 0.8);
+// 4 8 4 2 1
 neuralNetwork.Run();
 Console.ReadKey();
 
