@@ -421,8 +421,6 @@ public class NeuralNetwork
             testData[i] = copy[i + numTrainRows];
     }
 
-
-
     static double[][] ShuffleData(double[][] allData)
     {
         Random rnd = new(1);

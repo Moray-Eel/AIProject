@@ -15,7 +15,7 @@
 //Siódmy argument to wartość współczynnika uczenia
 
 
-NeuralNetwork neuralNetwork = new(new int[] { 4,3,5,1 }, new string[] { @"C:\Users\slikm\Pulpit\banknoteinput.csv", @"C:\Users\slikm\Pulpit\banknoteoutput.csv" }, 9, 0.8 , false, 1, 0.5);
+NeuralNetwork neuralNetwork = new(new int[] { 4,3,5,1 }, new string[] { @"C:\Users\slikm\Pulpit\IrisInput.tsv", @"C:\Users\slikm\Pulpit\IrisTarget.tsv" }, 5, 0.8 , false, 1, 0.5);
 // 4 8 4 2 1
 neuralNetwork.Run();
 Console.ReadKey();
