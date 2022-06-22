@@ -59,13 +59,14 @@ public class NeuralNetwork
     public double LearningRate = 0.1;
     public int NumberOfEpochs { get; set; }
     public double SplitFactor { get; set; }
+    public bool ReluInHidden { get; set; }
 
 
     /// <summary>
     /// Inicjalizuje tablice na podstawie tabeli layers
     /// </summary>
     /// <param name="layers"></param> 
-    public NeuralNetwork(int[] layers, string[] dataFiles, int numberOfEpochs, double splitFactor)
+    public NeuralNetwork(int[] layers, string[] dataFiles, int numberOfEpochs, double splitFactor, bool reluInHidden, double generatorLimit)
     {
         if (dataFiles.Length != 2)
             throw new ArgumentOutOfRangeException(nameof(dataFiles));
@@ -93,6 +94,11 @@ public class NeuralNetwork
         //Tablica spodziewanych wyników
         TargetValues = new double[layers[0]];
 
+        NumberOfEpochs = numberOfEpochs;
+
+        SplitFactor = splitFactor;
+
+        ReluInHidden = reluInHidden;
 
         for (int i = 0; i < layers.Length; i++)
         {
@@ -116,8 +122,6 @@ public class NeuralNetwork
             }
         }
 
-        NumberOfEpochs = numberOfEpochs;
-        SplitFactor = splitFactor;
     }
 
     /// <summary>
@@ -225,7 +229,7 @@ public class NeuralNetwork
     }
     public void Run()
     {
-        InitializeWeightsAndBiases(-0.5, 0.5);
+        InitializeWeightsAndBiases(-1, 1);
         SplitData(AllData, SplitFactor, out TrainingData, out TestData, ref TargetData);
         for (int j = 0; j < NumberOfEpochs; j++)
         {
