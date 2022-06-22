@@ -416,7 +416,7 @@ public class NeuralNetwork
 
         for (int i = 0; i < copy.Length; ++i)
         {
-            int r = rnd.Next(i, copy.Length); // Fisher-Yates
+            int r = rnd.Next(i, copy.Length);
             (copy[i], copy[r]) = (copy[r], copy[i]);
             (targetData[i], targetData[r]) = (targetData[r], targetData[i]);
         }
@@ -440,7 +440,7 @@ public class NeuralNetwork
 
         for (int i = 0; i < copy[i].Length; ++i)
         {
-            int r = rnd.Next(0, copy[i].Length-1); // Fisher-Yates
+            int r = rnd.Next(0, copy[i].Length-1);
             for (int j = 0; j < copy[i].Length; ++j)
             {
                 (copy[j][i], copy[j][r]) = (copy[j][r], copy[j][i]);
