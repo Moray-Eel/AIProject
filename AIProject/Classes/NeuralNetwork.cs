@@ -60,6 +60,7 @@ public class NeuralNetwork
     public int NumberOfEpochs { get; set; }
     public double SplitFactor { get; set; }
     public bool ReluInHidden { get; set; }
+    public double GeneratorLimit { get; set; }
 
 
     /// <summary>
@@ -99,6 +100,8 @@ public class NeuralNetwork
         SplitFactor = splitFactor;
 
         ReluInHidden = reluInHidden;
+
+        GeneratorLimit = generatorLimit;
 
         for (int i = 0; i < layers.Length; i++)
         {
@@ -229,7 +232,7 @@ public class NeuralNetwork
     }
     public void Run()
     {
-        InitializeWeightsAndBiases(-1, 1);
+        InitializeWeightsAndBiases(-GeneratorLimit, GeneratorLimit);
         SplitData(AllData, SplitFactor, out TrainingData, out TestData, ref TargetData);
         for (int j = 0; j < NumberOfEpochs; j++)
         {
